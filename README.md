@@ -1,3 +1,5 @@
+:boom:**Important Note!!!**  This is my own fork of the [original project](https://github.com/tzapu/WiFiManager/) and everything below this notice is from the original.  Any information you see below may or may not be correct anymore on this fork.  I am going to be monkeying around and you should absolutely not use this fork for anything you care about.  You have been warned.
+
 ## Current development going on here :arrow_right: [Development Branch](https://github.com/tzapu/WiFiManager/tree/development)
 
 # WiFiManager
