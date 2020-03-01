@@ -1,15 +1,10 @@
 
 # AsyncWiFiManager
-ESP8266 WiFi Connection manager with fallback web configuration portal
+Async ESP8266 WiFi Connection manager with fallback web configuration portal.
 
-[![Build Status](https://travis-ci.org/tzapu/AsyncWiFiManager.svg?branch=development)](https://travis-ci.org/tzapu/AsyncWiFiManager)
-
-![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)
-![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)
+:exclamation: Note that this branch is early work to enable Async capabilities, not all paths have been tested.  Additonally, the below documentation has not been validated, so it may be lagging development.
 
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
-
-First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
 
 **This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer)**
 
@@ -20,7 +15,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 [https://github.com/espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
 
 ### Known Issues
-* Documentation needs to be updated, see [https://github.com/tzapu/AsyncWiFiManager/issues/500](https://github.com/tzapu/AsyncWiFiManager/issues/500)
+* Documentation needs to be created
 
 ## Contents
  - [How it works](#how-it-works)
@@ -58,6 +53,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 ![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
 
 ## Wishlist
+- [X] Migrate to use Async Web Server
 - [x] remove dependency on EEPROM library
 - [x] move HTML Strings to PROGMEM
 - [x] cleanup and streamline code (although this is ongoing)
@@ -104,14 +100,15 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 You can either install through the Arduino Library Manager or checkout the latest changes or a release from github
 
 #### Install through Library Manager
-__Currently version 0.8+ works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+Not currently supported
+<!-- __Currently version 0.8+ works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
  - in Arduino IDE got to Sketch/Include Library/Manage Libraries
   ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
 
  - search for AsyncWiFiManager
   ![AsyncWiFiManager package](http://i.imgur.com/18yIai8.png)
 
- - click Install and start [using it](#using)
+ - click Install and start [using it](#using) -->
 
 ####  Checkout from github
 __Github version works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
@@ -120,7 +117,7 @@ __Github version works with release 2.4.0 or newer of the [ESP8266 core for Ardu
 ### Using
 - Include in your sketch
 ```cpp
-#include <AsyncWiFiManager.h>          //https://github.com/tzapu/AsyncWiFiManager WiFi Configuration Magic
+#include <AsyncWiFiManager.h>          //https://github.com/lbussy/AsyncWiFiManager WiFi Configuration Magic
 ```
 
 - Initialize library, in your setup function add, NOTEif you are using non blocking you will make sure you create this in global scope or handle appropriatly , it will not work if in setup and using non blocking mode.
@@ -145,15 +142,16 @@ AsyncWiFiManager.autoConnect();
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
-Also see [examples](https://github.com/tzapu/AsyncWiFiManager/tree/master/examples).
+Also see [examples](https://github.com/lbussy/AsyncWiFiManager/tree/development/examples).
 
 #### Install Using PlatformIO
 
 [PlatformIO](https://platformio.org/) is an emerging ecosystem for IoT development, and 
-is an alternative to using the Arduino IDE. Install `AsyncWiFiManager`
+is an alternative to using the Arduino IDE. 
+<!-- Install `AsyncWiFiManager`
 using the platformio [library manager](https://docs.platformio.org/en/latest/librarymanager/index.htm) in your editor, 
 or using the [PlatformIO Core CLI](https://docs.platformio.org/en/latest/userguide/demo.html#library-manager),
-or by adding it to your `platformio.ini` as shown below (recommended approach).
+or by adding it to your `platformio.ini` as shown below (recommended approach). -->
 
 The simplest way is to open the `platformio.ini` file at the root of your project, and `AsyncWiFiManager` to the common top-level env
 `lib_deps` key like so:
@@ -161,16 +159,16 @@ The simplest way is to open the `platformio.ini` file at the root of your projec
 ```
 [env]
 lib_deps =
-	AsyncWiFiManager
+	https://github.com/lbussy/AsyncWiFiManager.git#development
 ```
 
-If you want to install the development branch, then you'll need to use the `repository#tag` format instead:
+<!-- If you want to install the development branch, then you'll need to use the `repository#tag` format instead:
 
 ```
 [env]
 lib_deps =
-	https://github.com/tzapu/AsyncWiFiManager.git#development
-```
+	https://github.com/lbussy/AsyncWiFiManager.git#development
+``` -->
 
 ## Documentation
 
@@ -202,7 +200,7 @@ void configModeCallback (AsyncWiFiManager *myAsyncWiFiManager) {
 ##### Save settings
 This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere.
 
-See [AutoConnectWithFSParameters Example](https://github.com/tzapu/AsyncWiFiManager/tree/master/examples/AutoConnectWithFSParameters).
+See [AutoConnectWithFSParameters Example](https://github.com/lbussy/AsyncWiFiManager/tree/development/examples/AutoConnectWithFSParameters).
 ```cpp
 AsyncWiFiManager.setSaveConfigCallback(saveConfigCallback);
 ```
@@ -242,7 +240,7 @@ void loop() {
   }
 }
 ```
-See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/AsyncWiFiManager/tree/master/examples/OnDemandConfigPortal)
+See example for a more complex version. [OnDemandConfigPortal](https://github.com/lbussy/AsyncWiFiManager/tree/development/examples/OnDemandConfigPortal)
 
 #### Exiting from the Configuration Portal
 Normally, once entered, the configuration portal will continue to loop until WiFi credentials have been successfully entered or a timeout is reached.
@@ -272,7 +270,7 @@ Usage scenario would be:
 This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
 You should also take a look at adding custom HTML to your form.
 
-- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/AsyncWiFiManager/tree/master/examples/AutoConnectWithFSParameters)
+- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/lbussy/AsyncWiFiManager/tree/development/examples/AutoConnectWithFSParameters)
 - *Save and load custom parameters to EEPROM* (not done yet)
 
 #### Custom IP Configuration
@@ -549,4 +547,3 @@ And countless others
  * https://github.com/chriscook8/esp-arduino-apboot
  * https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
  * Built by AlexT https://github.com/tzapu
-
