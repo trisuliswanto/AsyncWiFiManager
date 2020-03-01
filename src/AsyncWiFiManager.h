@@ -1,18 +1,20 @@
 /**
- * WiFiManager.h
+ * AsyncWiFiManager.h
  * 
- * WiFiManager, a library for the ESP8266/Arduino platform
+ * AsyncWiFiManager, a library for the ESP8266/Arduino platform
  * for configuration of WiFi credentials using a Captive Portal
+ * and async libraries
  * 
  * @author Creator tzapu
  * @author tablatronix
+ * @author LBussy
  * @version 0.0.0
  * @license MIT
  */
 
 
-#ifndef WiFiManager_h
-#define WiFiManager_h
+#ifndef AsyncWiFiManager_h
+#define AsyncWiFiManager_h
 
 #if defined(ESP8266) || defined(ESP32)
 
@@ -45,7 +47,13 @@
       #include "user_interface.h"
     }
     #include <ESP8266WiFi.h>
-    #include <ESP8266WebServer.h>
+
+    #ifdef WM_ASYNC
+      #include <ESPAsyncTCP.h>
+      #include <ESPAsyncWebServer.h>
+    #else
+      #include <ESP8266WebServer.h>
+    #endif
 
     #ifdef WM_MDNS
         #include <ESP8266mDNS.h>
@@ -66,7 +74,11 @@
         #ifdef WM_WEBSERVERSHIM
             #include <WebServer.h>
         #else
+          #ifdef WM_ASYNC
+            #include <ESPAsyncWebServer.h> // Changed here
+          #else
             #include <ESP8266WebServer.h>
+          #endif
             // Forthcoming official ?
             // https://github.com/esp8266/ESPWebServer
         #endif
@@ -101,19 +113,19 @@
 #define WFM_LABEL_AFTER 2
 #define WFM_NO_LABEL 0
 
-class WiFiManagerParameter {
+class AsyncWiFiManagerParameter {
   public:
     /** 
-        Create custom parameters that can be added to the WiFiManager setup web page
+        Create custom parameters that can be added to the AsyncWiFiManager setup web page
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
-    WiFiManagerParameter();
-    WiFiManagerParameter(const char *custom);
-    WiFiManagerParameter(const char *id, const char *label);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
-    ~WiFiManagerParameter();
+    AsyncWiFiManagerParameter();
+    AsyncWiFiManagerParameter(const char *custom);
+    AsyncWiFiManagerParameter(const char *id, const char *label);
+    AsyncWiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
+    AsyncWiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
+    AsyncWiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    ~AsyncWiFiManagerParameter();
 
     const char *getID();
     const char *getValue();
@@ -135,17 +147,17 @@ class WiFiManagerParameter {
     int         _labelPlacement;
     const char *_customHTML;
 
-    friend class WiFiManager;
+    friend class AsyncWiFiManager;
 };
 
 
-class WiFiManager
+class AsyncWiFiManager
 {
   public:
-    WiFiManager(Stream& consolePort);
-    WiFiManager();
-    ~WiFiManager();
-    void WiFiManagerInit();
+    AsyncWiFiManager(Stream& consolePort);
+    AsyncWiFiManager();
+    ~AsyncWiFiManager();
+    void AsyncWiFiManagerInit();
 
     // auto connect to saved wifi, or custom, and start config portal on failures
     boolean       autoConnect();
@@ -180,9 +192,9 @@ class WiFiManager
     bool          erase(bool opt);
 
     //adds a custom parameter, returns false on failure
-    bool          addParameter(WiFiManagerParameter *p);
+    bool          addParameter(AsyncWiFiManagerParameter *p);
     //returns the list of Parameters
-    WiFiManagerParameter** getParameters();
+    AsyncWiFiManagerParameter** getParameters();
     // returns the Parameters Count
     int           getParametersCount();
 
@@ -190,7 +202,7 @@ class WiFiManager
     // SET CALLBACKS
 
     //called after AP mode and config portal has started
-    void          setAPCallback( std::function<void(WiFiManager*)> func );
+    void          setAPCallback( std::function<void(AsyncWiFiManager*)> func );
     //called after webserver has started
     void          setWebServerCallback( std::function<void()> func );
     //called when settings reset have been triggered
@@ -302,9 +314,12 @@ class WiFiManager
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
         using WM_WebServer = WebServer;
     #else
-        using WM_WebServer = ESP8266WebServer;
+        #ifdef WM_ASYNC
+          using WM_WebServer = AsyncWebServer;
+        #else
+          using WM_WebServer = ESP8266WebServer;
+        #endif
     #endif
-    
     std::unique_ptr<WM_WebServer> server;
 
   private:
@@ -484,10 +499,10 @@ class WiFiManager
     boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
     int           timer               = 0;
     
-    // WiFiManagerParameter
+    // AsyncWiFiManagerParameter
     int         _paramsCount          = 0;
     int         _max_params;
-    WiFiManagerParameter** _params    = NULL;
+    AsyncWiFiManagerParameter** _params    = NULL;
 
     // debugging
     typedef enum {
@@ -527,7 +542,7 @@ class WiFiManager
 
     // callbacks
     // @todo use cb list (vector) maybe event ids, allow no return value
-    std::function<void(WiFiManager*)> _apcallback;
+    std::function<void(AsyncWiFiManager*)> _apcallback;
     std::function<void()> _webservercallback;
     std::function<void()> _savewificallback;
     std::function<void()> _presavecallback;
