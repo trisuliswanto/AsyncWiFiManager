@@ -15,7 +15,7 @@ https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/debugging.rst
 ### Basic Infos
 
 #### Hardware
-WiFimanager Branch/Release:  Development
+AsyncWiFiManager Branch/Release:  Development
 
 Esp8266/Esp32: 
 

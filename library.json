@@ -1,23 +1,18 @@
 {
-  "name": "WifiManager",
+  "name": "AsyncWiFiManager",
   "keywords": "wifi,wi-fi,esp,esp8266,esp32,espressif8266,espressif32,nodemcu,wemos,arduino",
   "description": "WiFi Configuration manager with web configuration portal for ESP boards",
 "authors":
 [
     {
-        "name": "tzapu",
-        "url": "https://github.com/tzapu"
-    },
-    {
-        "name": "tablatronix",
-        "url": "https://github.com/tablatronix",
-        "maintainer": true
+        "name": "LBussy",
+        "url": "https://github.com/lbussy"
     }
 ],
 "repository":
   {
     "type": "git",
-    "url": "https://github.com/tzapu/WiFiManager.git"
+    "url": "https://github.com/lbussy/AsyncWiFiManager.git"
   },
   "frameworks": "arduino",
   "platforms": 

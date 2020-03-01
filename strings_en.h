@@ -1,11 +1,12 @@
 /**
  * strings_en.h
  * engligh strings for
- * WiFiManager, a library for the ESP8266/Arduino platform
+ * AsyncWiFiManager, a library for the ESP8266/Arduino platform
  * for configuration of WiFi credentials using a Captive Portal
  * 
  * @author Creator tzapu
  * @author tablatronix
+ * @author LBussy
  * @version 0.0.0
  * @license MIT
  */
@@ -26,7 +27,7 @@ const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){"
 
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body class='{c}'><div class='wrap'>";
 
-const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
+const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>AsyncWiFiManager</h3>";
 const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 "<form action='/wifi'    method='get'><button>Configure WiFi</button></form><br/>\n", // MENU_WIFI
 "<form action='/0wifi'   method='get'><button>Configure WiFi (No Scan)</button></form><br/>\n", // MENU_WIFINOSCAN
@@ -121,7 +122,7 @@ const char HTTP_HELP[]             PROGMEM =
  "<tr><td><a href='/erase'>/erase</a></td>"
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
  "</table>"
- "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+ "<p/>More information about AsyncWiFiManager at <a href='https://github.com/lbussy/AsyncWiFiManager'>https://github.com/lbussy/AsyncWiFiManager</a>.";
 
 #ifdef JSTEST
 const char HTTP_JS[] PROGMEM = 
