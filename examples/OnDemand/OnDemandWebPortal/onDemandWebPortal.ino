@@ -2,12 +2,12 @@
  * OnDemandWebPortal.ino
  * example of running the webportal (always NON blocking)
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
 
 // select which pin will trigger the configuration portal when set to LOW
 #define TRIGGER_PIN 0
 
-WiFiManager wm;
+AsyncWiFiManager wm;
 
 bool portalRunning = false;
 

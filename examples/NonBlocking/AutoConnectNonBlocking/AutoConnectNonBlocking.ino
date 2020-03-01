@@ -1,5 +1,5 @@
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
-WiFiManager wm;
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
+AsyncWiFiManager wm;
 
 void setup() {
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    

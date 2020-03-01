@@ -1,5 +1,5 @@
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
 
 /**************************************************************************************
  * this example shows how to set a static IP configuration for the ESP
@@ -19,12 +19,12 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
-  //WiFiManager
+  //AsyncWiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
+  AsyncWiFiManager AsyncWiFiManager;
 
   //reset settings - for testing
-  //wifiManager.resetSettings();
+  //AsyncWiFiManager.resetSettings();
 
   //set static ip
   //block1 should be used for ESP8266 core 2.1.0 or newer, otherwise use block2
@@ -42,14 +42,14 @@ void setup() {
   IPAddress _sn = IPAddress(255, 255, 255, 0);
   //end-block2
   
-  wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
+  AsyncWiFiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
 
 
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
+  if (!AsyncWiFiManager.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
     ESP.restart();

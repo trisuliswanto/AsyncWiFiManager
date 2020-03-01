@@ -1,6 +1,6 @@
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
-WiFiManager wm;
-WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
+AsyncWiFiManager wm;
+AsyncWiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
 
 void setup() {
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    

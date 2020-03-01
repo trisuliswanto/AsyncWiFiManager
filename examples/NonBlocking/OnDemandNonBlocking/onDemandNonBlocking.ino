@@ -4,12 +4,12 @@
  * trigger pin will start a webportal for 120 seconds then turn it off.
  * startCP = true will start both the configportal AP and webportal
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
 
 // select which pin will trigger the configuration portal when set to LOW
 #define TRIGGER_PIN 0
 
-WiFiManager wm;
+AsyncWiFiManager wm;
 
 unsigned int  timeout   = 120; // seconds to run for
 unsigned int  startTime = millis();
@@ -25,11 +25,11 @@ void setup() {
 }
 
 void loop() {
-  doWiFiManager();
+  doAsyncWiFiManager();
   // put your main code here, to run repeatedly:
 }
 
-void doWiFiManager(){
+void doAsyncWiFiManager(){
   // is auto timeout portal running
   if(portalRunning){
     wm.process();

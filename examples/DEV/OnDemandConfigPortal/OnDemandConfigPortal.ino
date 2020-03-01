@@ -3,7 +3,7 @@
  * It contains many of the public methods
  * 
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
 #include <time.h>
 #include <stdio.h>
 
@@ -67,7 +67,7 @@ void print_oled(String str,uint8_t size){
   (void)size;
 }
 
-WiFiManager wm;
+AsyncWiFiManager wm;
 
 // OPTION FLAGS
 bool TEST_CP  = true; // always start the configportal, even if ap found
@@ -81,16 +81,16 @@ void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
 }
 
-//gets called when WiFiManager enters configuration mode
-void configModeCallback (WiFiManager *myWiFiManager) {
+//gets called when AsyncWiFiManager enters configuration mode
+void configModeCallback (AsyncWiFiManager *myAsyncWiFiManager) {
   Serial.println("[CALLBACK] configModeCallback fired");
   #ifdef ESP8266
-    print_oled("WiFiManager Waiting\nIP: " + WiFi.softAPIP().toString() + "\nSSID: " + WiFi.softAPSSID(),1); 
+    print_oled("AsyncWiFiManager Waiting\nIP: " + WiFi.softAPIP().toString() + "\nSSID: " + WiFi.softAPSSID(),1); 
   #endif  
-  // myWiFiManager->setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
+  // myAsyncWiFiManager->setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
-  // Serial.println(myWiFiManager->getConfigPortalSSID());
+  // Serial.println(myAsyncWiFiManager->getConfigPortalSSID());
 }
 
 void saveParamCallback(){
@@ -134,15 +134,15 @@ void setup() {
   
   wm.setClass("invert");
 
-  WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
-  WiFiManagerParameter custom_token("api_token", "api token", "", 16);
-  WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
-  WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+  AsyncWiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
+  AsyncWiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
+  AsyncWiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
+  AsyncWiFiManagerParameter custom_token("api_token", "api token", "", 16);
+  AsyncWiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
+  AsyncWiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+  AsyncWiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
 
   // callbacks
   wm.setAPCallback(configModeCallback);

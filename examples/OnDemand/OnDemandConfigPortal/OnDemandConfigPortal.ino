@@ -4,7 +4,7 @@
  * trigger pin will start a configPortal AP for 120 seconds then turn it off.
  * 
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <AsyncWiFiManager.h> // https://github.com/tzapu/AsyncWiFiManager
 
 // select which pin will trigger the configuration portal when set to LOW
 #define TRIGGER_PIN 0
@@ -22,10 +22,10 @@ void setup() {
 void loop() {
   // is configuration portal requested?
   if ( digitalRead(TRIGGER_PIN) == LOW) {
-    WiFiManager wm;    
+    AsyncWiFiManager wm;    
 
     //reset settings - for testing
-    //wifiManager.resetSettings();
+    //AsyncWiFiManager.resetSettings();
   
     // set configportal timeout
     wm.setConfigPortalTimeout(timeout);
