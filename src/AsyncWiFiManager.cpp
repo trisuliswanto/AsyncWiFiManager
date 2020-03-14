@@ -246,96 +246,99 @@ boolean AsyncWiFiManager::autoConnect() {
  * @return {[type]}      [description]
  */
 boolean AsyncWiFiManager::autoConnect(char const *apName, char const *apPassword) {
-  DEBUG_WM(F("AutoConnect"));
-  _begin();
+  if(getWiFiIsSaved()){
 
-  // attempt to connect using saved settings, on fail fallback to AP config portal
-  if(!WiFi.enableSTA(true)){
-    // handle failure mode Brownout detector etc.
-    DEBUG_WM(DEBUG_ERROR,"[FATAL] Unable to enable wifi!");
-    return false;
-  }
-  
-  WiFiSetCountry();
+    DEBUG_WM(F("AutoConnect"));
+    _begin();
 
-  #ifdef ESP32
-  if(esp32persistent) WiFi.persistent(false); // disable persistent for esp32 after esp_wifi_start or else saves wont work
-  #endif
+    // attempt to connect using saved settings, on fail fallback to AP config portal
+    if(!WiFi.enableSTA(true)){
+      // handle failure mode Brownout detector etc.
+      DEBUG_WM(DEBUG_ERROR,"[FATAL] Unable to enable wifi!");
+      return false;
+    }
 
-  _usermode = WIFI_STA;
+    WiFiSetCountry();
 
-  // no getter for autoreconnectpolicy before this
-  // https://github.com/esp8266/Arduino/pull/4359
-  // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
-  WiFi_autoReconnect();
-
-  // set hostname before stating
-  if((String)_hostname != ""){
-    DEBUG_WM(DEBUG_VERBOSE,"Setting hostname:",_hostname);
-    bool res = true;
-    #ifdef ESP8266
-      res = WiFi.hostname(_hostname);
-      #ifdef ESP8266MDNS_H
-        DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
-        if(MDNS.begin(_hostname)){
-          MDNS.addService("http", "tcp", 80);
-        }
-      #endif
-    #elif defined(ESP32)
-      // @note hostname must be set after STA_START
-      delay(200); // do not remove, give time for STA_START
-      res = WiFi.setHostname(_hostname);
-      #ifdef ESP32MDNS_H
-        DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
-        if(MDNS.begin(_hostname)){
-          MDNS.addService("http", "tcp", 80);
-        }
-      #endif
+    #ifdef ESP32
+    if(esp32persistent) WiFi.persistent(false); // disable persistent for esp32 after esp_wifi_start or else saves wont work
     #endif
-    
-    if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: set failed!"));
-    
-    if(WiFi.status() == WL_CONNECTED){
-      DEBUG_WM(DEBUG_VERBOSE,F("reconnecting to set new hostname"));
-      // WiFi.reconnect(); // This does not reset dhcp
-      WiFi_Disconnect();
-      delay(200); // do not remove, need a delay for disconnect to change status()
-    }
-  }
 
-  // if already connected, or try stored connect 
-  // @note @todo ESP32 has no autoconnect, so connectwifi will always be called unless user called begin etc before
-  // @todo check if correct ssid == saved ssid when already connected
-  bool connected = false;
-  if (WiFi.status() == WL_CONNECTED){
-    connected = true;
-    DEBUG_WM(F("AutoConnect: ESP Already Connected"));
-    setSTAConfig();
-  }
+    _usermode = WIFI_STA;
 
-  if(connected || connectWifi("", "") == WL_CONNECTED){
-    //connected
-    DEBUG_WM(F("AutoConnect: SUCCESS"));
-    DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
-    _lastconxresult = WL_CONNECTED;
+    // no getter for autoreconnectpolicy before this
+    // https://github.com/esp8266/Arduino/pull/4359
+    // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
+    WiFi_autoReconnect();
 
+    // set hostname before stating
     if((String)_hostname != ""){
+      DEBUG_WM(DEBUG_VERBOSE,"Setting hostname:",_hostname);
+      bool res = true;
       #ifdef ESP8266
-        DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.hostname());
+        res = WiFi.hostname(_hostname);
+        #ifdef ESP8266MDNS_H
+          DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
+          if(MDNS.begin(_hostname)){
+            MDNS.addService("http", "tcp", 80);
+          }
+        #endif
       #elif defined(ESP32)
-        DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.getHostname());
+        // @note hostname must be set after STA_START
+        delay(200); // do not remove, give time for STA_START
+        res = WiFi.setHostname(_hostname);
+        #ifdef ESP32MDNS_H
+          DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
+          if(MDNS.begin(_hostname)){
+            MDNS.addService("http", "tcp", 80);
+          }
+        #endif
       #endif
-    }
-    return true;
-  }
 
-  // possibly skip the config portal
-  if (!_enableConfigPortal) {
-    return false;
-  }
+      if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: set failed!"));
+
+      if(WiFi.status() == WL_CONNECTED){
+        DEBUG_WM(DEBUG_VERBOSE,F("reconnecting to set new hostname"));
+        // WiFi.reconnect(); // This does not reset dhcp
+        WiFi_Disconnect();
+        delay(200); // do not remove, need a delay for disconnect to change status()
+      }
+    }
+
+    // if already connected, or try stored connect
+    // @note @todo ESP32 has no autoconnect, so connectwifi will always be called unless user called begin etc before
+    // @todo check if correct ssid == saved ssid when already connected
+    bool connected = false;
+    if (WiFi.status() == WL_CONNECTED){
+      connected = true;
+      DEBUG_WM(F("AutoConnect: ESP Already Connected"));
+      setSTAConfig();
+    }
+
+    if(connected || connectWifi("", "") == WL_CONNECTED){
+      //connected
+      DEBUG_WM(F("AutoConnect: SUCCESS"));
+      DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
+      _lastconxresult = WL_CONNECTED;
+
+      if((String)_hostname != ""){
+        #ifdef ESP8266
+          DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.hostname());
+        #elif defined(ESP32)
+          DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.getHostname());
+        #endif
+      }
+      return true;
+    }
+
+    // possibly skip the config portal
+    if (!_enableConfigPortal) {
+      return false;
+    }
 
   DEBUG_WM(F("AutoConnect: FAILED"));
-
+  }
+  else DEBUG_WM(F("No Credentials are Saved, skipping connect"));
   // not connected start configportal
   return startConfigPortal(apName, apPassword);
 }
@@ -500,7 +503,7 @@ void AsyncWiFiManager::setupConfigPortal() {
   server->on(String(FPSTR(R_erase)).c_str(),      std::bind(&AsyncWiFiManager::handleErase, this, false));
   server->on(String(FPSTR(R_status)).c_str(),     std::bind(&AsyncWiFiManager::handleWiFiStatus, this));
   server->onNotFound(                             std::bind(&AsyncWiFiManager::handleNotFound, this));
-  
+
   server->begin(); // Web server start
   DEBUG_WM(DEBUG_VERBOSE,F("HTTP server started"));
 
@@ -525,13 +528,13 @@ boolean  AsyncWiFiManager::startConfigPortal(char const *apName, char const *apP
   //setup AP
   _apName     = apName; // @todo check valid apname ?
   _apPassword = apPassword;
-  
+
   DEBUG_WM(DEBUG_VERBOSE,F("Starting Config Portal"));
 
   if(_apName == "") _apName = getDefaultAPName();
 
   if(!validApPassword()) return false;
-  
+
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
   // @todo sometimes still cannot connect to AP for no known reason, no events in log either
   if(_disableSTA || (!WiFi.isConnected() && _disableSTAConn)){
@@ -631,7 +634,7 @@ uint8_t AsyncWiFiManager::processConfigPortal(){
       else{
         // attempt sta connection to submitted _ssid, _pass
         if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
-          
+
           DEBUG_WM(F("Connect to new AP [SUCCESS]"));
           DEBUG_WM(F("Got IP Address:"));
           DEBUG_WM(WiFi.localIP());
@@ -722,14 +725,14 @@ bool AsyncWiFiManager::shutdownConfigPortal(){
 // clean up, flow is convoluted, and causes bugs
 uint8_t AsyncWiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(DEBUG_VERBOSE,F("Connecting as wifi client..."));
-  
+
   uint8_t connRes = (uint8_t)WL_NO_SSID_AVAIL;
 
   setSTAConfig();
   //@todo catch failures in set_config
-  
+
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  
+
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
   // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
@@ -1971,7 +1974,7 @@ bool AsyncWiFiManager::erase(bool opt){
  * @access public
  */
 void AsyncWiFiManager::resetSettings() {
-  DEBUG_WM(F("SETTINGS ERASED"));
+  DEBUG_WM(F("resetSettings"));
   WiFi_enableSTA(true,true); // must be sta to disconnect erase
   
   if (_resetcallback != NULL)
@@ -1983,7 +1986,8 @@ void AsyncWiFiManager::resetSettings() {
     WiFi.persistent(true);
     WiFi.disconnect(true);
     WiFi.persistent(false);
-  #endif  
+  #endif
+  DEBUG_WM(F("SETTINGS ERASED"));
 }
 
 // SETTERS
