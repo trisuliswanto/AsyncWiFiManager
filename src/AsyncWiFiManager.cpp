@@ -218,7 +218,7 @@ AsyncWiFiManager::~AsyncWiFiManager() {
 void AsyncWiFiManager::_begin(){
   if(_hasBegun) return;
   _hasBegun = true;
-  _usermode = WiFi.getMode();
+  // _usermode = WiFi.getMode();
 
   #ifndef ESP32
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
@@ -264,7 +264,7 @@ boolean AsyncWiFiManager::autoConnect(char const *apName, char const *apPassword
     if(esp32persistent) WiFi.persistent(false); // disable persistent for esp32 after esp_wifi_start or else saves wont work
     #endif
 
-    _usermode = WIFI_STA;
+    _usermode = WIFI_STA; // When using autoconnect , assume the user wants sta mode on permanently.
 
     // no getter for autoreconnectpolicy before this
     // https://github.com/esp8266/Arduino/pull/4359
@@ -944,7 +944,7 @@ void AsyncWiFiManager::handleRoot() {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Root"));
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
-  String page = getHTTPHead(FPSTR(S_options)); // @token options
+  String page = getHTTPHead(FPSTR(S_options)); // @token options @todo replace options with title
   String str  = FPSTR(HTTP_ROOT_MAIN);
   str.replace(FPSTR(T_v),configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
   page += str;
