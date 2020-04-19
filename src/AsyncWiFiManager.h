@@ -75,7 +75,8 @@
             #include <WebServer.h>
         #else
           #ifdef WM_ASYNC
-            #include <ESPAsyncWebServer.h> // Changed here
+            #include <AsyncTCP.h>
+            #include <ESPAsyncWebServer.h>
           #else
             #include <ESP8266WebServer.h>
           #endif
