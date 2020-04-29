@@ -1,7 +1,7 @@
 # AsyncWiFiManager
 Async ESP8266 WiFi Connection manager with fallback web configuration portal.
 
-:exclamation: Note that this branch is early work to enable Async capabilities, not all paths have been tested.  Additonally, the below documentation has not been validated, so it may be lagging development.
+:exclamation: This is a private repo fork for my personal use.  It should not be used by other projects.  This fork is early work to enable Async capabilities, not all paths have been tested.  Additonally, the below documentation has not been validated, so it may be lagging development.
 
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
@@ -18,6 +18,7 @@ The configuration portal is of the captive variety, so on various devices it wil
 
 ## Contents
  - [How it works](#how-it-works)
+ - [To-Do](#to-do)
  - [Wishlist](#wishlist)
  - [Quick start](#quick-start)
    - Installing
@@ -38,6 +39,11 @@ The configuration portal is of the captive variety, so on various devices it wil
  - [Releases](#releases)
  - [Contributors](#contributions-and-thanks)
 
+## To Do
+- [ ] Update to work with ESP32
+- [X] Migrate to use Async Web Server
+- [ ] Pull in any upstream changes
+- [ ] Promote to master
 
 ## How It Works
 - When your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
@@ -52,7 +58,6 @@ The configuration portal is of the captive variety, so on various devices it wil
 ![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
 
 ## Wishlist
-- [X] Migrate to use Async Web Server
 - [x] remove dependency on EEPROM library
 - [x] move HTML Strings to PROGMEM
 - [x] cleanup and streamline code (although this is ongoing)
