@@ -2888,6 +2888,7 @@ void AsyncWiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     } 
     // DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+       if(_debug) Serial.println();
        DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON:"),info.disconnected.reason);
        if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
          _lastconxresulttmp = 7; // hack in wrong password internally, sdk emit WIFI_REASON_AUTH_EXPIRE on some routers on auth_fail
