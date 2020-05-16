@@ -533,13 +533,14 @@ class AsyncWiFiManager
 
     template <typename Generic>
     void        DEBUG_WM(Generic text);
-
     template <typename Generic>
     void        DEBUG_WM(wm_debuglevel_t level,Generic text);
     template <typename Generic, typename Genericb>
     void        DEBUG_WM(Generic text,Genericb textb);
     template <typename Generic, typename Genericb>
     void        DEBUG_WM(wm_debuglevel_t level, Generic text,Genericb textb);
+    template <typename Generic, typename Genericb>
+    void        DEBUG_WM(wm_debuglevel_t level, Generic text,Genericb textb,bool cr);
 
     // callbacks
     // @todo use cb list (vector) maybe event ids, allow no return value
