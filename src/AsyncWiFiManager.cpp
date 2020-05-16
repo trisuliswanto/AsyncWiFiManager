@@ -890,11 +890,13 @@ uint8_t AsyncWiFiManager::waitForConnectResult(uint16_t timeout) {
     status = WiFi.status();
     // @todo detect additional states, connect happens, then dhcp then get ip, there is some delay here, make sure not to timeout if waiting on IP
     if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+      if(_debug) Serial.println();
       return status;
     }
-    DEBUG_WM (DEBUG_VERBOSE,F("."));
+    if(_debug) Serial.print(".");
     delay(100);
   }
+  if(_debug) Serial.println();
   return status;
 }
 
@@ -1098,9 +1100,10 @@ bool AsyncWiFiManager::WiFi_scanNetworks(bool force,bool async){
       else if(res == WIFI_SCAN_RUNNING){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] scan waiting");
         while(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
-          DEBUG_WM(DEBUG_ERROR,".");
+          if(_debug) Serial.print(".");
           delay(100);
         }
+        if(_debug) Serial.println();
         _numNetworks = WiFi.scanComplete();
       }
       else if(res >=0 ) _numNetworks = res;
@@ -2392,7 +2395,7 @@ void AsyncWiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 
