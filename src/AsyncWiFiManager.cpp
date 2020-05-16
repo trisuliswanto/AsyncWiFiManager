@@ -2894,16 +2894,13 @@ void AsyncWiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
          _lastconxresulttmp = 7; // hack in wrong password internally, sdk emit WIFI_REASON_AUTH_EXPIRE on some routers on auth_fail
       } else if (info.disconnected.reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) {
         // Hack to reset due to ESP not connecting after flashing
-        if(_debug) Serial.println();
         DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT detected, resetting."));
         ESP.restart();
       } else _lastconxresulttmp = WiFi.status();
       if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND){
-        if(_debug) Serial.println();
         DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: NO_AP_FOUND"));
       }
       #ifdef esp32autoreconnect
-        if(_debug) Serial.println();
         DEBUG_WM(DEBUG_VERBOSE,F("[Event] SYSTEM_EVENT_STA_DISCONNECTED, reconnecting."));
         WiFi.reconnect();
       #endif
