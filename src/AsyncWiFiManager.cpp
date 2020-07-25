@@ -920,7 +920,13 @@ bool AsyncWiFiManager::wifiConnectNew(String ssid, String pass)
     DEBUG_WM(DEBUG_DEV, F("Using password:"), pass);
     WiFi_enableSTA(true, storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
+
+#ifdef ESP8266
+    ret = WiFi.begin(ssid.c_str(), pass.c_str(), WiFi.channel(), WiFi.BSSID());
+#else
     ret = WiFi.begin(ssid.c_str(), pass.c_str());
+#endif
+
     WiFi.persistent(false);
     if (!ret)
         DEBUG_WM(DEBUG_ERROR, F("[ERROR] WiFi begin failed."));
