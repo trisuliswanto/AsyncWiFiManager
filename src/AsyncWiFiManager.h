@@ -28,9 +28,13 @@
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS
 // #define WM_RTC             // esp32 info page will include reset reasons
 
+// #define WM_JSTEST                      // build flag for enabling js xhr tests
+// #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
+
 #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
 #warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled"
-#define WM_NOASYNC // esp8266 no async scan wifi
+#define WM_NOASYNC   // esp8266 no async scan wifi
+#define WM_NOCOUNTRY // esp8266 no country
 #endif
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
@@ -141,13 +145,13 @@ protected:
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
 private:
+    AsyncWiFiManagerParameter &operator=(const AsyncWiFiManagerParameter &);
     const char *_id;
     const char *_label;
     char *_value;
     int _length;
     int _labelPlacement;
     const char *_customHTML;
-
     friend class AsyncWiFiManager;
 };
 
@@ -306,6 +310,7 @@ public:
     // set body class (invert)
     void setClass(String str);
     String getDefaultAPName();
+    void setHttpPort(uint16_t port);
 
     std::unique_ptr<DNSServer> dnsServer;
 
@@ -362,8 +367,10 @@ private:
     bool _channelSync = false;   // use same wifi sta channel when starting ap
     int32_t _apChannel = 0;      // channel to use for ap
     bool _apHidden = false;      // store softap hidden value
+    uint16_t _httpPort = 80;     // port for webserver
 
 #ifdef ESP32
+    wifi_event_id_t wm_event_id;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
 #endif
 
@@ -387,6 +394,7 @@ private:
     boolean _scanDispOptions = false;        // show percentage in scans not icons
     boolean _paramsInWifi = true;            // show custom parameters on wifi page
     boolean _showInfoErase = true;           // info page erase button
+    boolean _showBack = false;               // show back button
     boolean _enableConfigPortal = true;      // use config portal if autoconnect failed
     const char *_hostname = "";
 
@@ -409,6 +417,7 @@ private:
 
     void setupConfigPortal();
     bool shutdownConfigPortal();
+    bool setupHostname(bool restart);
 
 #ifdef NO_EXTRA_4K_HEAP
     boolean _tryWPS = false; // try WPS on save failure, unsupported
@@ -537,8 +546,6 @@ private:
     void DEBUG_WM(Generic text, Genericb textb);
     template <typename Generic, typename Genericb>
     void DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb);
-    template <typename Generic, typename Genericb>
-    void DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb, bool cr);
 
     // callbacks
     // @todo use cb list (vector) maybe event ids, allow no return value

@@ -243,10 +243,11 @@ AsyncWiFiManager::~AsyncWiFiManager()
         _params = NULL;
     }
 
-    // @todo remove event
-    // #ifdef ESP32
-    // WiFi.removeEvent(std::bind(&AsyncWiFiManager::WiFiEvent,this));
-    // #endif
+// @todo remove event
+// WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+#ifdef ESP32
+    WiFi.removeEvent(wm_event_id);
+#endif
 
     DEBUG_WM(DEBUG_DEV, F("Unloading AsyncWiFiManager."));
 }
@@ -319,40 +320,41 @@ boolean AsyncWiFiManager::autoConnect(char const *apName, char const *apPassword
         // set hostname before stating
         if ((String)_hostname != "")
         {
-            DEBUG_WM(DEBUG_VERBOSE, "Setting hostname:", _hostname);
-            bool res = true;
-#ifdef ESP8266
-            res = WiFi.hostname(_hostname);
-#ifdef ESP8266MDNS_H
-            DEBUG_WM(DEBUG_VERBOSE, F("Setting MDNS hostname."));
-            if (MDNS.begin(_hostname))
-            {
-                MDNS.addService("http", "tcp", 80);
-            }
-#endif
-#elif defined(ESP32)
-            // @note hostname must be set after STA_START
-            delay(200); // do not remove, give time for STA_START
-            res = WiFi.setHostname(_hostname);
-#ifdef ESP32MDNS_H
-            DEBUG_WM(DEBUG_VERBOSE, F("Setting MDNS hostname."));
-            if (MDNS.begin(_hostname))
-            {
-                MDNS.addService("http", "tcp", 80);
-            }
-#endif
-#endif
+            setupHostname(true);
+            //             DEBUG_WM(DEBUG_VERBOSE, "Setting hostname:", _hostname);
+            //             bool res = true;
+            // #ifdef ESP8266
+            //             res = WiFi.hostname(_hostname);
+            // #ifdef ESP8266MDNS_H
+            //             DEBUG_WM(DEBUG_VERBOSE, F("Setting MDNS hostname."));
+            //             if (MDNS.begin(_hostname))
+            //             {
+            //                 MDNS.addService("http", "tcp", 80);
+            //             }
+            // #endif
+            // #elif defined(ESP32)
+            //             // @note hostname must be set after STA_START
+            //             delay(200); // do not remove, give time for STA_START
+            //             res = WiFi.setHostname(_hostname);
+            // #ifdef ESP32MDNS_H
+            //             DEBUG_WM(DEBUG_VERBOSE, F("Setting MDNS hostname."));
+            //             if (MDNS.begin(_hostname))
+            //             {
+            //                 MDNS.addService("http", "tcp", 80);
+            //             }
+            // #endif
+            // #endif
 
-            if (!res)
-                DEBUG_WM(DEBUG_ERROR, F("[ERROR] hostname: set failed."));
+            //             if (!res)
+            //                 DEBUG_WM(DEBUG_ERROR, F("[ERROR] hostname: set failed."));
 
-            if (WiFi.status() == WL_CONNECTED)
-            {
-                DEBUG_WM(DEBUG_VERBOSE, F("Reconnecting to set new hostname."));
-                // WiFi.reconnect(); // This does not reset dhcp
-                WiFi_Disconnect();
-                delay(200); // do not remove, need a delay for disconnect to change status()
-            }
+            //             if (WiFi.status() == WL_CONNECTED)
+            //             {
+            //                 DEBUG_WM(DEBUG_VERBOSE, F("Reconnecting to set new hostname."));
+            //                 // WiFi.reconnect(); // This does not reset dhcp
+            //                 WiFi_Disconnect();
+            //                 delay(200); // do not remove, need a delay for disconnect to change status()
+            //             }
         }
 
         // if already connected, or try stored connect
@@ -396,7 +398,58 @@ boolean AsyncWiFiManager::autoConnect(char const *apName, char const *apPassword
         DEBUG_WM(F("No credentials are saved, skipping connect."));
 
     // not connected start configportal
-    return startConfigPortal(apName, apPassword);
+    // return startConfigPortal(apName, apPassword);
+    bool res = startConfigPortal(apName, apPassword);
+    return res;
+}
+
+bool AsyncWiFiManager::setupHostname(bool restart)
+{
+    if ((String)_hostname == "")
+    {
+        DEBUG_WM(DEBUG_DEV, "No Hostname to set");
+        return false;
+    }
+    else
+        DEBUG_WM(DEBUG_DEV, "setupHostname: ", _hostname);
+    bool res = true;
+#ifdef ESP8266
+    DEBUG_WM(DEBUG_VERBOSE, "Setting WiFi hostname");
+    res = WiFi.hostname(_hostname);
+// #ifdef ESP8266MDNS_H
+#ifdef WM_MDNS
+    DEBUG_WM(DEBUG_VERBOSE, "Setting MDNS hostname, tcp 80");
+    if (MDNS.begin(_hostname))
+    {
+        MDNS.addService("http", "tcp", 80);
+    }
+#endif
+#elif defined(ESP32)
+    // @note hostname must be set after STA_START
+    delay(200); // do not remove, give time for STA_START
+    res = WiFi.setHostname(_hostname);
+    // #ifdef ESP32MDNS_H
+#ifdef WM_MDNS
+    DEBUG_WM(DEBUG_VERBOSE, "Setting MDNS hostname, tcp 80");
+    if (MDNS.begin(_hostname))
+    {
+        MDNS.addService("http", "tcp", 80);
+    }
+#endif
+#endif
+
+    if (!res)
+        DEBUG_WM(DEBUG_ERROR, F("[ERROR] hostname: set failed!"));
+
+    if (restart && (WiFi.status() == WL_CONNECTED))
+    {
+        DEBUG_WM(DEBUG_VERBOSE, F("reconnecting to set new hostname"));
+        // WiFi.reconnect(); // This does not reset dhcp
+        WiFi_Disconnect();
+        delay(200); // do not remove, need a delay for disconnect to change status()
+    }
+
+    return res;
 }
 
 // CONFIG PORTAL
@@ -563,7 +616,10 @@ void AsyncWiFiManager::setupConfigPortal()
 
     // setup dns and web servers
     dnsServer.reset(new DNSServer());
-    server.reset(new WM_WebServer(80));
+    server.reset(new WM_WebServer(_httpPort));
+
+    if (_httpPort != 80)
+        DEBUG_WM(DEBUG_VERBOSE, "http server started with custom port: ", _httpPort); // @todo not showing ip
 
     /* Setup the DNS server redirecting all the domains to the apIP */
     dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -709,6 +765,11 @@ boolean AsyncWiFiManager::startConfigPortal(char const *apName, char const *apPa
  */
 boolean AsyncWiFiManager::process()
 {
+// process mdns, esp32 not required
+#if defined(WM_MDNS) && defined(ESP8266)
+    MDNS.update();
+#endif
+
     if (webPortalActive || (configPortalActive && !_configPortalIsBlocking))
     {
         uint8_t state = processConfigPortal();
@@ -920,12 +981,13 @@ bool AsyncWiFiManager::wifiConnectNew(String ssid, String pass)
     DEBUG_WM(DEBUG_DEV, F("Using password:"), pass);
     WiFi_enableSTA(true, storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
-
-#ifdef ESP8266
-    ret = WiFi.begin(ssid.c_str(), pass.c_str(), WiFi.channel(), WiFi.BSSID());
-#else
     ret = WiFi.begin(ssid.c_str(), pass.c_str());
-#endif
+
+    // #ifdef ESP8266
+    //     ret = WiFi.begin(ssid.c_str(), pass.c_str(), WiFi.channel(), WiFi.BSSID());
+    // #else
+    //     ret = WiFi.begin(ssid.c_str(), pass.c_str());
+    // #endif
 
     WiFi.persistent(false);
     if (!ret)
@@ -944,6 +1006,8 @@ bool AsyncWiFiManager::wifiConnectDefault()
     DEBUG_WM(F("Connecting to saved AP:"), WiFi_SSID(true));
     DEBUG_WM(DEBUG_DEV, F("Using password:"), WiFi_psk(true));
     ret = WiFi_enableSTA(true, storeSTAmode);
+    delay(500); // THIS DELAY ?
+    DEBUG_WM(DEBUG_DEV, "Mode after delay: " + getModeString(WiFi.getMode()));
     if (!ret)
         DEBUG_WM(DEBUG_ERROR, F("[ERROR] WiFi enableSta failed."));
     ret = WiFi.begin();
@@ -1036,7 +1100,7 @@ uint8_t AsyncWiFiManager::waitForConnectResult(uint16_t timeout)
     }
 
     unsigned long timeoutmillis = millis() + timeout;
-    DEBUG_WM(DEBUG_VERBOSE, timeout, F("ms timeout, waiting for connect."), false);
+    DEBUG_WM(DEBUG_VERBOSE, timeout, F("ms timeout, waiting for connect."));
     uint8_t status = WiFi.status();
 
     while (millis() < timeoutmillis)
@@ -1173,6 +1237,8 @@ void AsyncWiFiManager::handleWifi(boolean scan)
     }
     page += FPSTR(HTTP_FORM_END);
     page += FPSTR(HTTP_SCAN_LINK);
+    if (_showBack)
+        page += FPSTR(HTTP_BACKBTN);
     reportStatus(page);
     page += FPSTR(HTTP_END);
 
@@ -1200,6 +1266,8 @@ void AsyncWiFiManager::handleParam()
 
     page += getParamOut();
     page += FPSTR(HTTP_FORM_END);
+    if (_showBack)
+        page += FPSTR(HTTP_BACKBTN);
     reportStatus(page);
     page += FPSTR(HTTP_END);
 
@@ -1560,7 +1628,7 @@ void AsyncWiFiManager::handleWiFiStatus()
     handleRequest();
     String page;
 // String page = "{\"result\":true,\"count\":1}";
-#ifdef JSTEST
+#ifdef WM_JSTEST
     page = FPSTR(HTTP_JS);
 #endif
     server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
@@ -1784,6 +1852,8 @@ void AsyncWiFiManager::handleInfo()
     page += F("</dl>");
     if (_showInfoErase)
         page += FPSTR(HTTP_ERASEBTN);
+    if (_showBack)
+        page += FPSTR(HTTP_BACKBTN);
     page += FPSTR(HTTP_HELP);
     page += FPSTR(HTTP_END);
 
@@ -2154,10 +2224,17 @@ boolean AsyncWiFiManager::captivePortal()
     if (!_enableCaptivePortal)
         return false; // skip redirections
 
-    if (!isIp(server->hostHeader()))
+    String serverLoc = toStringIp(server->client().localIP());
+    if (_httpPort != 80)
+        serverLoc += ":" + (String)_httpPort;            // add port if not default
+    bool doredirect = serverLoc != server->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
+    // doredirect = !isIp(server->hostHeader()) // old check
+
+    if (doredirect)
+    // if (!isIp(server->hostHeader()))
     {
         DEBUG_WM(DEBUG_VERBOSE, F("<- Request redirected to captive portal."));
-        server->sendHeader(F("Location"), (String)F("http://") + toStringIp(server->client().localIP()), true);
+        server->sendHeader(F("Location"), (String)F("http://") + serverLoc, true);
         server->send(302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
         server->client().stop();                     // Stop is needed because we sent no content length
         return true;
@@ -2877,6 +2954,11 @@ void AsyncWiFiManager::setClass(String str)
     _bodyClass = str;
 }
 
+void AsyncWiFiManager::setHttpPort(uint16_t port)
+{
+    _httpPort = port;
+}
+
 // HELPERS
 
 /**
@@ -2906,30 +2988,30 @@ String AsyncWiFiManager::getWiFiPass(bool persistent)
 template <typename Generic>
 void AsyncWiFiManager::DEBUG_WM(Generic text)
 {
-    DEBUG_WM(DEBUG_NOTIFY, text, F(""), true);
+    DEBUG_WM(DEBUG_NOTIFY, text, F(""));
 }
 
 template <typename Generic>
 void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text)
 {
     if (_debugLevel >= level)
-        DEBUG_WM(level, text, F(""), true);
+        DEBUG_WM(level, text, F(""));
+    // }
+
+    // template <typename Generic, typename Genericb>
+    // void AsyncWiFiManager::DEBUG_WM(Generic text, Genericb textb)
+    // {
+    //     DEBUG_WM(DEBUG_NOTIFY, text, textb, true);
 }
 
 template <typename Generic, typename Genericb>
 void AsyncWiFiManager::DEBUG_WM(Generic text, Genericb textb)
 {
-    DEBUG_WM(DEBUG_NOTIFY, text, textb, true);
+    DEBUG_WM(DEBUG_NOTIFY, text, textb);
 }
 
 template <typename Generic, typename Genericb>
 void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb)
-{
-    DEBUG_WM(level, text, textb, true);
-}
-
-template <typename Generic, typename Genericb>
-void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb, bool cr)
 {
     if (!_debug || _debugLevel < level)
         return;
@@ -2940,8 +3022,9 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb te
         uint16_t max;
         uint8_t frag;
 #ifdef ESP8266
-        ESP.getHeapStats(&free, &max, &frag);
-        _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
+        // TODO: Does not exist in 2.3.0
+        // ESP.getHeapStats(&free, &max, &frag);
+        // _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
 #elif defined ESP32
         // total_free_bytes;      ///<  Total free bytes in the heap. Equivalent to multi_free_heap_size().
         // total_allocated_bytes; ///<  Total bytes allocated to data in the heap.
@@ -2967,8 +3050,8 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb te
         _debugPort.print(F(" "));
         _debugPort.print(textb);
     }
-    if (cr)
-        _debugPort.println(); // Allow no \n after line
+    // if (cr) // TODO
+    _debugPort.println(); // Allow no \n after line
 }
 
 /**
@@ -2978,13 +3061,17 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb te
  */
 void AsyncWiFiManager::debugSoftAPConfig()
 {
-    wifi_country_t country;
+    // wifi_country_t country;
 
 #ifdef ESP8266
     softap_config config;
     wifi_softap_get_config(&config);
+#if !defined(WM_NOCOUNTRY)
+    wifi_country_t country;
     wifi_get_country(&country);
+#endif
 #elif defined(ESP32)
+    wifi_country_t country;
     wifi_config_t conf_config;
     esp_wifi_get_config(WIFI_IF_AP, &conf_config); // == ESP_OK
     wifi_ap_config_t config = conf_config.ap;
@@ -3000,7 +3087,10 @@ void AsyncWiFiManager::debugSoftAPConfig()
     DEBUG_WM(F("authmode:        "), config.authmode);
     DEBUG_WM(F("ssid_hidden:     "), config.ssid_hidden);
     DEBUG_WM(F("max_connection:  "), config.max_connection);
+#if !defined(WM_NOCOUNTRY)
     DEBUG_WM(F("country:         "), (String)country.cc);
+#endif
+    // DEBUG_WM(F("country:         "), (String)country.cc);
     DEBUG_WM(F("beacon_interval: "), (String)config.beacon_interval + "(ms)");
     DEBUG_WM(FPSTR(D_HR));
 }
@@ -3021,7 +3111,7 @@ void AsyncWiFiManager::debugPlatformInfo()
 #elif defined(ESP32)
     size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
     DEBUG_WM(F("Free heap:       "), freeHeap);
-    DEBUG_WM(F("ESP-IDF version: "), esp_get_idf_version());
+    DEBUG_WM(F("ESP SDK version: "), esp_get_idf_version());
 #endif
 }
 
@@ -3152,7 +3242,7 @@ bool AsyncWiFiManager::WiFiSetCountry()
     else
         DEBUG_WM(DEBUG_ERROR, F("[ERROR] Country code not found."));
 
-#elif defined(ESP8266)
+#elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
     // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
     if (_wificountry == "US")
         ret = wifi_set_country((wifi_country_t *)&WM_COUNTRY_US);
@@ -3224,7 +3314,7 @@ bool AsyncWiFiManager::WiFi_Disconnect()
 // toggle STA without persistent
 bool AsyncWiFiManager::WiFi_enableSTA(bool enable, bool persistent)
 {
-    DEBUG_WM(DEBUG_DEV, F("WiFi station enable."));
+    DEBUG_WM(DEBUG_DEV, F("WiFi_enableSTA: "), (String)enable ? "enabled." : "disabled.");
 #ifdef ESP8266
     WiFiMode_t newMode;
     WiFiMode_t currentMode = WiFi.getMode();
@@ -3427,7 +3517,7 @@ void AsyncWiFiManager::WiFi_autoReconnect()
     // @todo move to seperate method, used for event listener now
     DEBUG_WM(DEBUG_VERBOSE, F("ESP32 event handler enabled."));
     using namespace std::placeholders;
-    WiFi.onEvent(std::bind(&AsyncWiFiManager::WiFiEvent, this, _1, _2));
+    wm_event_id = WiFi.onEvent(std::bind(&AsyncWiFiManager::WiFiEvent, this, _1, _2));
     // }
 #endif
 }
