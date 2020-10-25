@@ -539,13 +539,13 @@ private:
 #endif
 
     template <typename Generic>
-    void DEBUG_WM(Generic text);
+    void DEBUG_WM(Generic text, bool cr = true);
     template <typename Generic>
-    void DEBUG_WM(wm_debuglevel_t level, Generic text);
+    void DEBUG_WM(wm_debuglevel_t level, Generic text, bool cr = true);
     template <typename Generic, typename Genericb>
-    void DEBUG_WM(Generic text, Genericb textb);
+    void DEBUG_WM(Generic text, Genericb textb, bool cr = true);
     template <typename Generic, typename Genericb>
-    void DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb);
+    void DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb, bool cr = true);
 
     // callbacks
     // @todo use cb list (vector) maybe event ids, allow no return value

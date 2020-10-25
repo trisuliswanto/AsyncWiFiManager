@@ -979,8 +979,14 @@ bool AsyncWiFiManager::wifiConnectNew(String ssid, String pass)
     DEBUG_WM(F("Connected:"), WiFi.status() == WL_CONNECTED);
     DEBUG_WM(F("Connecting to new AP:"), ssid);
     DEBUG_WM(DEBUG_DEV, F("Using password:"), pass);
+    // Eliminate 4-way handshake errors
+    WiFi.disconnect();
+    WiFi.enableSTA(true);
+    WiFi.setSleep(false);
+    //
     WiFi_enableSTA(true, storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
+
     ret = WiFi.begin(ssid.c_str(), pass.c_str());
 
     // #ifdef ESP8266
@@ -1005,8 +1011,13 @@ bool AsyncWiFiManager::wifiConnectDefault()
     bool ret = false;
     DEBUG_WM(F("Connecting to saved AP:"), WiFi_SSID(true));
     DEBUG_WM(DEBUG_DEV, F("Using password:"), WiFi_psk(true));
+    // Eliminate 4-way handshake errors
+    WiFi.disconnect();
+    WiFi.enableSTA(true);
+    WiFi.setSleep(false);
+    //
     ret = WiFi_enableSTA(true, storeSTAmode);
-    delay(500); // THIS DELAY ?
+    delay(500); // If this is not here, credentials are not detected when saved
     DEBUG_WM(DEBUG_DEV, "Mode after delay: " + getModeString(WiFi.getMode()));
     if (!ret)
         DEBUG_WM(DEBUG_ERROR, F("[ERROR] WiFi enableSta failed."));
@@ -1100,7 +1111,7 @@ uint8_t AsyncWiFiManager::waitForConnectResult(uint16_t timeout)
     }
 
     unsigned long timeoutmillis = millis() + timeout;
-    DEBUG_WM(DEBUG_VERBOSE, timeout, F("ms timeout, waiting for connect."));
+    DEBUG_WM(DEBUG_VERBOSE, timeout, F("ms timeout, waiting for connection."), false);
     uint8_t status = WiFi.status();
 
     while (millis() < timeoutmillis)
@@ -2986,16 +2997,16 @@ String AsyncWiFiManager::getWiFiPass(bool persistent)
 // DEBUG
 // @todo fix DEBUG_WM(0,0);
 template <typename Generic>
-void AsyncWiFiManager::DEBUG_WM(Generic text)
+void AsyncWiFiManager::DEBUG_WM(Generic text, bool cr)
 {
-    DEBUG_WM(DEBUG_NOTIFY, text, F(""));
+    DEBUG_WM(DEBUG_NOTIFY, text, "", cr);
 }
 
 template <typename Generic>
-void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text)
+void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, bool cr)
 {
     if (_debugLevel >= level)
-        DEBUG_WM(level, text, F(""));
+        DEBUG_WM(level, text, "", cr);
     // }
 
     // template <typename Generic, typename Genericb>
@@ -3005,13 +3016,13 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text)
 }
 
 template <typename Generic, typename Genericb>
-void AsyncWiFiManager::DEBUG_WM(Generic text, Genericb textb)
+void AsyncWiFiManager::DEBUG_WM(Generic text, Genericb textb, bool cr)
 {
-    DEBUG_WM(DEBUG_NOTIFY, text, textb);
+    DEBUG_WM(DEBUG_NOTIFY, text, textb, cr);
 }
 
 template <typename Generic, typename Genericb>
-void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb)
+void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb textb, bool cr)
 {
     if (!_debug || _debugLevel < level)
         return;
@@ -3038,7 +3049,7 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb te
         free = info.total_free_bytes;
         max = info.largest_free_block;
         frag = 100 - (max * 100) / free;
-        _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
+        _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% %s", free, max, frag, cr ? "\n" : "");
 #endif
     }
     _debugPort.print(F("*WM: "));
@@ -3050,8 +3061,7 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb te
         _debugPort.print(F(" "));
         _debugPort.print(textb);
     }
-    // if (cr) // TODO
-    _debugPort.println(); // Allow no \n after line
+    _debugPort.print(cr ? "\n" : ""); // Allow no \n after line
 }
 
 /**
