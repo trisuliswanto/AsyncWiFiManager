@@ -982,7 +982,11 @@ bool AsyncWiFiManager::wifiConnectNew(String ssid, String pass)
     // Eliminate 4-way handshake errors
     WiFi.disconnect();
     WiFi.enableSTA(true);
+#ifdef ESP8266
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
+#elif ESP32
     WiFi.setSleep(false);
+#endif
     //
     WiFi_enableSTA(true, storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
@@ -1014,7 +1018,11 @@ bool AsyncWiFiManager::wifiConnectDefault()
     // Eliminate 4-way handshake errors
     WiFi.disconnect();
     WiFi.enableSTA(true);
+#ifdef ESP8266
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
+#elif ESP32
     WiFi.setSleep(false);
+#endif
     //
     ret = WiFi_enableSTA(true, storeSTAmode);
     delay(500); // If this is not here, credentials are not detected when saved
