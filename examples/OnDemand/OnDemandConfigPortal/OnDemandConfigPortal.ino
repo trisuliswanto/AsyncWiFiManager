@@ -30,6 +30,9 @@ void loop() {
     // set configportal timeout
     wm.setConfigPortalTimeout(timeout);
 
+    // set wifi connect retries
+    // wm.setConnectRetries(2);
+
     if (!wm.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
       delay(3000);

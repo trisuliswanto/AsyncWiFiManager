@@ -906,6 +906,7 @@ uint8_t AsyncWiFiManager::connectWifi(String ssid, String pass)
 {
     DEBUG_WM(DEBUG_VERBOSE, F("Connecting as WiFi client."));
 
+    uint8_t retry = 1;
     uint8_t connRes = (uint8_t)WL_NO_SSID_AVAIL;
 
     setSTAConfig();
@@ -917,34 +918,43 @@ uint8_t AsyncWiFiManager::connectWifi(String ssid, String pass)
         WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
     // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
-    // if ssid argument provided connect to that
-    if (ssid != "")
+    while (retry <= _connectRetries)
     {
-        wifiConnectNew(ssid, pass);
-        if (_saveTimeout > 0)
+        if (_connectRetries > 1)
         {
-            connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
+            DEBUG_WM(F("Connect Wifi, ATTEMPT #"), (String)retry + " of " + (String)_connectRetries);
         }
-        else
-        {
-            connRes = waitForConnectResult(0);
-        }
-    }
-    else
-    {
-        // connect using saved ssid if there is one
-        if (WiFi_hasAutoConnect())
-        {
-            wifiConnectDefault();
-            connRes = waitForConnectResult();
-        }
-        else
-        {
-            DEBUG_WM(F("No WiFi save required, skipping."));
-        }
-    }
 
-    DEBUG_WM(DEBUG_VERBOSE, F("Connection result:"), getWLStatusString(connRes));
+        // if ssid argument provided connect to that
+        if (ssid != "")
+        {
+            wifiConnectNew(ssid, pass);
+            if (_saveTimeout > 0)
+            {
+                connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
+            }
+            else
+            {
+                connRes = waitForConnectResult(0);
+            }
+        }
+        else
+        {
+            // connect using saved ssid if there is one
+            if (WiFi_hasAutoConnect())
+            {
+                wifiConnectDefault();
+                connRes = waitForConnectResult();
+            }
+            else
+            {
+                DEBUG_WM(F("No WiFi save, skipping."));
+            }
+        }
+
+        DEBUG_WM(DEBUG_VERBOSE, F("Connection result:"), getWLStatusString(connRes));
+        retry++;
+    }
 
 // WPS enabled? https://github.com/esp8266/Arduino/pull/4889
 #ifdef NO_EXTRA_4K_HEAP
@@ -2476,6 +2486,18 @@ void AsyncWiFiManager::setConnectTimeout(unsigned long seconds)
 {
     _connectTimeout = seconds * 1000;
 }
+
+/**
+ * [setConnectRetries description]
+ * @access public
+ * @param {[type]} uint8_t numRetries [description]
+ */
+void AsyncWiFiManager::setConnectRetries(uint8_t numRetries)
+{
+    _connectRetries = numRetries;
+    constrain(_connectRetries, 1, 10);
+}
+
 /**
  * toggle _cleanconnect, always disconnect before connecting
  * @param {[type]} bool enable [description]
@@ -3042,8 +3064,8 @@ void AsyncWiFiManager::DEBUG_WM(wm_debuglevel_t level, Generic text, Genericb te
         uint8_t frag;
 #ifdef ESP8266
         // TODO: Does not exist in 2.3.0
-        // ESP.getHeapStats(&free, &max, &frag);
-        // _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
+        ESP.getHeapStats(&free, &max, &frag);
+        _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
 #elif defined ESP32
         // total_free_bytes;      ///<  Total free bytes in the heap. Equivalent to multi_free_heap_size().
         // total_allocated_bytes; ///<  Total bytes allocated to data in the heap.
