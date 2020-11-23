@@ -2494,8 +2494,7 @@ void AsyncWiFiManager::setConnectTimeout(unsigned long seconds)
  */
 void AsyncWiFiManager::setConnectRetries(uint8_t numRetries)
 {
-    _connectRetries = numRetries;
-    constrain(_connectRetries, 1, 10);
+    _connectRetries = constrain(numRetries, 1, 10);
 }
 
 /**
