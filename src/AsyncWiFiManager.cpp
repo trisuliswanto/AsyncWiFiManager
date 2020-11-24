@@ -987,28 +987,16 @@ bool AsyncWiFiManager::wifiConnectNew(String ssid, String pass)
 {
     bool ret = false;
     DEBUG_WM(F("Connected:"), WiFi.status() == WL_CONNECTED);
-    DEBUG_WM(F("Connecting to new AP:"), ssid);
-    DEBUG_WM(DEBUG_DEV, F("Using password:"), pass);
-    // Eliminate 4-way handshake errors
-    WiFi.disconnect();
-    WiFi.enableSTA(true);
-#ifdef ESP8266
-    WiFi.setSleepMode(WIFI_NONE_SLEEP);
-#elif ESP32
-    WiFi.setSleep(false);
-#endif
-    //
+    DEBUG_WM(F("Connecting to nNew AP:"), ssid);
+    DEBUG_WM(DEBUG_DEV, F("Using Ppassword:"), pass);
     WiFi_enableSTA(true, storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
-
-    ret = WiFi.begin(ssid.c_str(), pass.c_str());
-
     // #ifdef ESP8266
     //     ret = WiFi.begin(ssid.c_str(), pass.c_str(), WiFi.channel(), WiFi.BSSID());
     // #else
     //     ret = WiFi.begin(ssid.c_str(), pass.c_str());
     // #endif
-
+    ret = WiFi.begin(ssid.c_str(), pass.c_str());
     WiFi.persistent(false);
     if (!ret)
         DEBUG_WM(DEBUG_ERROR, F("[ERROR] WiFi begin failed."));
@@ -1025,15 +1013,6 @@ bool AsyncWiFiManager::wifiConnectDefault()
     bool ret = false;
     DEBUG_WM(F("Connecting to saved AP:"), WiFi_SSID(true));
     DEBUG_WM(DEBUG_DEV, F("Using password:"), WiFi_psk(true));
-    // Eliminate 4-way handshake errors
-    WiFi.disconnect();
-    WiFi.enableSTA(true);
-#ifdef ESP8266
-    WiFi.setSleepMode(WIFI_NONE_SLEEP);
-#elif ESP32
-    WiFi.setSleep(false);
-#endif
-    //
     ret = WiFi_enableSTA(true, storeSTAmode);
     delay(500); // If this is not here, credentials are not detected when saved
     DEBUG_WM(DEBUG_DEV, "Mode after delay: " + getModeString(WiFi.getMode()));
