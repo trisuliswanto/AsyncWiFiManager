@@ -1,6 +1,6 @@
 /**
  * strings_en.h
- * engligh strings for
+ * English strings for
  * AsyncWiFiManager, a library for the ESP8266/Arduino platform
  * for configuration of WiFi credentials using a Captive Portal
  * 
@@ -42,8 +42,8 @@ const char *const HTTP_PORTAL_MENU[] PROGMEM = {
 
 // const char HTTP_PORTAL_OPTIONS[]   PROGMEM = strcat(HTTP_PORTAL_MENU[0] , HTTP_PORTAL_MENU[3] , HTTP_PORTAL_MENU[7]);
 const char HTTP_PORTAL_OPTIONS[] PROGMEM = "";
-const char HTTP_ITEM_QI[] PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i} {h}'></div>"; // rssi icons
-const char HTTP_ITEM_QP[] PROGMEM = "<div class='q {h}'>{r}%</div>";                                                 // rssi percentage
+const char HTTP_ITEM_QI[] PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i} {h}'></div>"; // RSSI icons
+const char HTTP_ITEM_QP[] PROGMEM = "<div class='q {h}'>{r}%</div>";                                                 // RSSI percentage
 const char HTTP_ITEM[] PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>{qi}{qp}</div>";                        // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
 // const char HTTP_ITEM[]            PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a> {R} {r}% {q} {e}</div>"; // test all tokens
 
@@ -211,7 +211,7 @@ const char S_subnet[] PROGMEM = "Subnet";
 const char S_exiting[] PROGMEM = "Exiting";
 const char S_resetting[] PROGMEM = "Module will reset in a few seconds.";
 const char S_closing[] PROGMEM = "You can close the page, portal will continue to run";
-const char S_error[] PROGMEM = "An Error Occured";
+const char S_error[] PROGMEM = "An error occurred";
 const char S_notfound[] PROGMEM = "File Not Found\n\n";
 const char S_uri[] PROGMEM = "URI: ";
 const char S_method[] PROGMEM = "\nMethod: ";
@@ -252,13 +252,13 @@ const char R_close[] PROGMEM = "/close";
 const char R_erase[] PROGMEM = "/erase";
 const char R_status[] PROGMEM = "/status";
 
-//Strings
+/ Strings
 const char S_ip[] PROGMEM = "ip";
 const char S_gw[] PROGMEM = "gw";
 const char S_sn[] PROGMEM = "sn";
 const char S_dns[] PROGMEM = "dns";
 
-// softap ssid default prefix
+// Softap SSID default prefix
 #ifdef ESP8266
 const char S_ssidpre[] PROGMEM = "ESP";
 #elif defined(ESP32)
@@ -267,8 +267,8 @@ const char S_ssidpre[] PROGMEM = "ESP32";
 const char S_ssidpre[] PROGMEM = "WM";
 #endif
 
-//Tokens
-//@todo consolidate and reduce
+// Tokens
+// @todo consolidate and reduce
 const char T_ss[] PROGMEM = "{";  // token start sentinel
 const char T_es[] PROGMEM = "}";  // token end sentinel
 const char T_1[] PROGMEM = "{1}"; // @token 1

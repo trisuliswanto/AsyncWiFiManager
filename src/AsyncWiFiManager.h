@@ -163,7 +163,7 @@ public:
     ~AsyncWiFiManager();
     void AsyncWiFiManagerInit();
 
-    // auto connect to saved wifi, or custom, and start config portal on failures
+    // auto connect to saved WiFi, or custom, and start config portal on failures
     boolean autoConnect();
     boolean autoConnect(char const *apName, char const *apPassword = NULL);
 
@@ -171,7 +171,7 @@ public:
     boolean startConfigPortal(); // auto generates apname
     boolean startConfigPortal(char const *apName, char const *apPassword = NULL);
 
-    //manually stop the config portal if started manually, stop immediatly if non blocking, flag abort if blocking
+    //manually stop the config portal if started manually, stop immediately if non blocking, flag abort if blocking
     bool stopConfigPortal();
 
     //manually start the web portal, autoconnect does this automatically on connect failure
@@ -185,11 +185,11 @@ public:
     String getConfigPortalSSID();
     int getRSSIasQuality(int RSSI);
 
-    // erase wifi credentials
+    // erase WiFi credentials
     void resetSettings();
     // reboot esp
     void reboot();
-    // disconnect wifi, without persistent saving or erasing
+    // disconnect WiFi, without persistent saving or erasing
     bool disconnect();
     // erase esp
     bool erase();
@@ -210,7 +210,7 @@ public:
     void setWebServerCallback(std::function<void()> func);
     //called when settings reset have been triggered
     void setConfigResetCallback(std::function<void()> func);
-    //called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
+    //called when WiFi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
     void setSaveConfigCallback(std::function<void()> func);
     //called when settings have been changed and connection was successful
     void setSaveParamsCallback(std::function<void()> func);
@@ -251,13 +251,13 @@ public:
     void setCustomHeadElement(const char *element);
     //if this is true, remove duplicated Access Points - defaut true
     void setRemoveDuplicateAPs(boolean removeDuplicates);
-    //setter for ESP wifi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
+    //setter for ESP WiFi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
     void setRestorePersistent(boolean persistent);
     //if true, always show static net inputs, IP, subnet, gateway, else only show if set via setSTAStaticIPConfig
     void setShowStaticFields(boolean alwaysShow);
-    //if true, always show static dns, esle only show if set via setSTAStaticIPConfig
+    //if true, always show static dns, else only show if set via setSTAStaticIPConfig
     void setShowDnsFields(boolean alwaysShow);
-    // toggle showing the saved wifi password in wifi form, could be a security issue.
+    // toggle showing the saved WiFi password in WiFi form, could be a security issue.
     void setShowPassword(boolean show);
     //if false, disable captive portal redirection
     void setCaptivePortalEnable(boolean enabled);
@@ -273,7 +273,7 @@ public:
     void setEnableConfigPortal(boolean enable);
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool setHostname(const char *hostname);
-    // show erase wifi onfig button on info page, true
+    // show erase WiFi Config button on info page, true
     void setShowInfoErase(boolean enabled);
     // set ap channel
     void setWiFiAPChannel(int32_t channel);
@@ -287,7 +287,7 @@ public:
     void setMenu(std::vector<const char *> &menu);
     void setMenu(const char *menu[], uint8_t size);
 
-    // add params to its own menu page and remove from wifi, NOT TO BE COMBINED WITH setMenu!
+    // add params to its own menu page and remove from WiFi, NOT TO BE COMBINED WITH setMenu!
     void setParamsPage(bool enable);
 
     // get last connection result, includes autoconnect and wifisave
@@ -298,7 +298,7 @@ public:
     // check if the module has a saved ap to connect to
     bool getWiFiIsSaved();
 
-    // helper to get saved ssid, if persistent get stored, else get current if connected
+    // helper to get saved SSID, if persistent get stored, else get current if connected
     String getWiFiPass(bool persistent = false);
     // helper to get saved password, if persistent get stored, else get current if connected
     String getWiFiSSID(bool persistent = false);
@@ -309,7 +309,7 @@ public:
     void debugPlatformInfo();
     String htmlEntities(String str);
 
-    // set the country code for wifi settings
+    // set the country code for WiFi settings
     void setCountry(String cc);
     // set body class (invert)
     void setClass(String str);
@@ -385,7 +385,7 @@ private:
 #endif
 
     // parameter options
-    int _minimumQuality = -1;                // filter wifiscan ap by this rssi
+    int _minimumQuality = -1;                // filter wifiscan ap by this RSSI
     int _staShowStaticFields = 0;            // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
     int _staShowDns = 0;                     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean _removeDuplicateAPs = true;      // remove dup aps from wifiscan
