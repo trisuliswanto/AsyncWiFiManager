@@ -634,7 +634,7 @@ void AsyncWiFiManager::setupConfigPortal()
         _webservercallback();
     }
 
-    /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
+    /* Setup httpd callbacks, web pages: root, WiFi config pages, SO captive portal detectors and not found. */
     server->on(String(FPSTR(R_root)).c_str(), std::bind(&AsyncWiFiManager::handleRoot, this));
     server->on(String(FPSTR(R_wifi)).c_str(), std::bind(&AsyncWiFiManager::handleWifi, this, true));
     server->on(String(FPSTR(R_wifinoscan)).c_str(), std::bind(&AsyncWiFiManager::handleWifi, this, false));
@@ -899,7 +899,7 @@ bool AsyncWiFiManager::shutdownConfigPortal()
     return ret;
 }
 
-// @todo refactor this up into seperate functions
+// @todo refactor this up into separate functions
 // one for connecting to flash , one for new client
 // clean up, flow is convoluted, and causes bugs
 uint8_t AsyncWiFiManager::connectWifi(String ssid, String pass)
@@ -912,7 +912,7 @@ uint8_t AsyncWiFiManager::connectWifi(String ssid, String pass)
     setSTAConfig();
     //@todo catch failures in set_config
 
-    // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
+    // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to EEPROM !)
 
     if (_cleanConnect)
         WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
@@ -987,8 +987,8 @@ bool AsyncWiFiManager::wifiConnectNew(String ssid, String pass)
 {
     bool ret = false;
     DEBUG_WM(F("Connected:"), WiFi.status() == WL_CONNECTED);
-    DEBUG_WM(F("Connecting to nNew AP:"), ssid);
-    DEBUG_WM(DEBUG_DEV, F("Using Ppassword:"), pass);
+    DEBUG_WM(F("Connecting to new AP:"), ssid);
+    DEBUG_WM(DEBUG_DEV, F("Using password:"), pass);
     WiFi_enableSTA(true, storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
     // #ifdef ESP8266
