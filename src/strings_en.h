@@ -252,7 +252,7 @@ const char R_close[] PROGMEM = "/close";
 const char R_erase[] PROGMEM = "/erase";
 const char R_status[] PROGMEM = "/status";
 
-/ Strings
+// Strings
 const char S_ip[] PROGMEM = "ip";
 const char S_gw[] PROGMEM = "gw";
 const char S_sn[] PROGMEM = "sn";
